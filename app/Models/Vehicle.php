@@ -14,13 +14,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Kendaraan milik penyewa. Satu plat hanya milik satu penyewa; sepeda tanpa plat.
  */
+// Fillable: kolom yang boleh diisi sekaligus lewat create()/update(); kolom lain diabaikan (aman dari input liar).
 #[Fillable(['tenant_id', 'type', 'plate_number', 'brand_model', 'battery_capacity_kwh'])]
 class Vehicle extends Model
 {
+    // HasFactory: mengaktifkan Vehicle::factory() untuk membuat data contoh di test.
     /** @use HasFactory<VehicleFactory> */
     use HasFactory;
 
     /**
+     * Cast: mengubah nilai kolom saat dibaca/disimpan, tipe kolom di DB tetap.
+     * - type: string "car" ↔ enum VehicleType::Car.
+     * - battery_capacity_kwh: DECIMAL dibaca sebagai string oleh PDO, di-cast ke float.
+     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -48,6 +54,8 @@ class Vehicle extends Model
     }
 
     /**
+     * Relasi N:1 — penyewa pemilik kendaraan (vehicles.tenant_id → tenants.user_id).
+     *
      * @return BelongsTo<Tenant, $this>
      */
     public function tenant(): BelongsTo
@@ -56,6 +64,8 @@ class Vehicle extends Model
     }
 
     /**
+     * Relasi 1:N — riwayat sewa kendaraan ini (rentals.vehicle_id).
+     *
      * @return HasMany<Rental, $this>
      */
     public function rentals(): HasMany

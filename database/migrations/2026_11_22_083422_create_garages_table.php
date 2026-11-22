@@ -22,12 +22,14 @@ return new class extends Migration
             $table->unsignedInteger('price_per_kwh')->nullable();
             $table->timestamps();
 
+            // Nomor unik per tipe: S001 dan C001 boleh ada bersamaan, dua C001 tidak.
             $table->unique(['type', 'number']);
         });
 
+        // CHECK: nomor 1–999 (kode 3 digit) dan harga harian harus lebih dari 0.
         DB::statement('ALTER TABLE garages ADD CONSTRAINT garages_number_check CHECK (number BETWEEN 1 AND 999)');
         DB::statement('ALTER TABLE garages ADD CONSTRAINT garages_daily_price_check CHECK (daily_price > 0)');
-        // Harga per kWh diisi jika dan hanya jika garasi mobil listrik.
+        // CHECK: harga per kWh diisi jika dan hanya jika garasi mobil listrik.
         DB::statement("ALTER TABLE garages ADD CONSTRAINT garages_price_per_kwh_check
             CHECK ((type = 'electric_car') = (price_per_kwh IS NOT NULL))");
     }

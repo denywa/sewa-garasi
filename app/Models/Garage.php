@@ -16,13 +16,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Garasi yang disewakan. Status "used" tidak disimpan: garasi dipakai bila ada sewa aktif.
  */
+// Fillable: kolom yang boleh diisi sekaligus lewat create()/update(); kolom lain diabaikan (aman dari input liar).
 #[Fillable(['type', 'number', 'daily_price', 'price_per_kwh'])]
 class Garage extends Model
 {
+    // HasFactory: mengaktifkan Garage::factory() untuk membuat data contoh di test.
     /** @use HasFactory<GarageFactory> */
     use HasFactory;
 
     /**
+     * Cast: mengubah nilai kolom saat dibaca/disimpan, tipe kolom di DB tetap.
+     * - type: string "car" ↔ enum GarageType::Car.
+     * - angka: dipastikan int agar aman dipakai hitung biaya.
+     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -44,7 +50,8 @@ class Garage extends Model
     }
 
     /**
-     * Hanya garasi yang tidak punya sewa aktif pada tanggal ini.
+     * Scope (potongan query yang bisa dipakai ulang): hanya garasi tanpa sewa aktif pada tanggal ini.
+     * Dipanggil: Garage::query()->availableOn($tanggal)->get().
      *
      * @param  Builder<Garage>  $query
      */
@@ -55,6 +62,8 @@ class Garage extends Model
     }
 
     /**
+     * Relasi 1:N — riwayat sewa garasi ini (rentals.garage_id).
+     *
      * @return HasMany<Rental, $this>
      */
     public function rentals(): HasMany

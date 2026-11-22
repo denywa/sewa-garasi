@@ -16,6 +16,8 @@ return new class extends Migration
     {
         Schema::create('rentals', function (Blueprint $table) {
             $table->id();
+            // FK: sewa harus menunjuk kendaraan & garasi yang ada. RESTRICT = keduanya tidak bisa
+            // dihapus selama punya riwayat sewa; CASCADE = ikut berubah bila id induk berubah.
             $table->foreignId('vehicle_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignId('garage_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->enum('rental_type', array_column(RentalType::cases(), 'value'));
@@ -28,6 +30,7 @@ return new class extends Migration
             $table->index(['garage_id', 'start_date', 'end_date']);
         });
 
+        // CHECK: tanggal selesai tidak boleh sebelum tanggal mulai; sisa baterai tidak boleh negatif.
         DB::statement('ALTER TABLE rentals ADD CONSTRAINT rentals_dates_check CHECK (end_date >= start_date)');
         DB::statement('ALTER TABLE rentals ADD CONSTRAINT rentals_battery_check
             CHECK (battery_remaining_kwh IS NULL OR battery_remaining_kwh >= 0)');

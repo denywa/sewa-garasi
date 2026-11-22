@@ -12,13 +12,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Pembayaran (sewa awal / perpanjangan) beserta bukti bayar dan tanggal selesai yang dibayar.
  */
+// Fillable: kolom yang boleh diisi sekaligus lewat create()/update(); kolom lain diabaikan (aman dari input liar).
 #[Fillable(['rental_id', 'type', 'amount', 'proof_path', 'end_date'])]
 class Payment extends Model
 {
+    // HasFactory: mengaktifkan Payment::factory() untuk membuat data contoh di test.
     /** @use HasFactory<PaymentFactory> */
     use HasFactory;
 
     /**
+     * Cast: mengubah nilai kolom saat dibaca/disimpan, tipe kolom di DB tetap.
+     * - type: string "initial" ↔ enum PaymentType::Initial.
+     * - end_date: string ↔ objek Carbon.
+     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -31,6 +37,8 @@ class Payment extends Model
     }
 
     /**
+     * Relasi N:1 — sewa yang dibayar (payments.rental_id).
+     *
      * @return BelongsTo<Rental, $this>
      */
     public function rental(): BelongsTo

@@ -16,13 +16,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Sewa satu garasi oleh satu kendaraan. Tanggal selesai inklusif.
  */
+// Fillable: kolom yang boleh diisi sekaligus lewat create()/update(); kolom lain diabaikan (aman dari input liar).
 #[Fillable(['vehicle_id', 'garage_id', 'rental_type', 'start_date', 'end_date', 'battery_remaining_kwh'])]
 class Rental extends Model
 {
+    // HasFactory: mengaktifkan Rental::factory() untuk membuat data contoh di test.
     /** @use HasFactory<RentalFactory> */
     use HasFactory;
 
     /**
+     * Cast: mengubah nilai kolom saat dibaca/disimpan, tipe kolom di DB tetap.
+     * - rental_type: string "daily" ↔ enum RentalType::Daily.
+     * - start_date/end_date: string "2026-11-22" ↔ objek Carbon (bisa ->addDays(), ->format()).
+     * - battery_remaining_kwh: DECIMAL → float.
+     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -36,7 +43,7 @@ class Rental extends Model
     }
 
     /**
-     * Sewa yang sedang berjalan pada tanggal ini: start_date ≤ tanggal ≤ end_date.
+     * Scope: sewa yang sedang berjalan pada tanggal ini: start_date ≤ tanggal ≤ end_date.
      * Dipakai bersama oleh Garage::availableOn dan Vehicle::hasActiveRental.
      *
      * @param  Builder<Rental>  $query
@@ -49,6 +56,8 @@ class Rental extends Model
     }
 
     /**
+     * Relasi N:1 — kendaraan yang disewakan (rentals.vehicle_id).
+     *
      * @return BelongsTo<Vehicle, $this>
      */
     public function vehicle(): BelongsTo
@@ -57,6 +66,8 @@ class Rental extends Model
     }
 
     /**
+     * Relasi N:1 — garasi yang disewa (rentals.garage_id).
+     *
      * @return BelongsTo<Garage, $this>
      */
     public function garage(): BelongsTo
@@ -65,7 +76,7 @@ class Rental extends Model
     }
 
     /**
-     * Pembayaran sewa awal & perpanjangan.
+     * Relasi 1:N — pembayaran sewa awal & perpanjangan (payments.rental_id).
      *
      * @return HasMany<Payment, $this>
      */

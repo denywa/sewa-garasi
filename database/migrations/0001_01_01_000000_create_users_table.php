@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            // enum: kolom hanya menerima nilai dari UserRole (admin/tenant).
             $table->enum('role', array_column(UserRole::cases(), 'value'));
             $table->string('name');
             $table->string('email')->unique();

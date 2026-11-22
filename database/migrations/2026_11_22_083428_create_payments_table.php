@@ -15,14 +15,16 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            // FK ke rentals.id. RESTRICT = sewa yang sudah dibayar tidak bisa dihapus (riwayat uang aman).
             $table->foreignId('rental_id')->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->enum('type', array_column(PaymentType::cases(), 'value'));
             $table->unsignedInteger('amount');
             $table->string('proof_path');
-            $table->date('end_date');
+            $table->date('end_date'); // tanggal selesai yang dibayar (awal / hasil perpanjangan)
             $table->timestamps();
         });
 
+        // CHECK: jumlah bayar harus lebih dari 0.
         DB::statement('ALTER TABLE payments ADD CONSTRAINT payments_amount_check CHECK (amount > 0)');
     }
 

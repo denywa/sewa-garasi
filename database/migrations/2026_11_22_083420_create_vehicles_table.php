@@ -15,16 +15,18 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
+            // FK ke tenants.user_id (PK tabel tenants). RESTRICT = penyewa tidak bisa dihapus selama punya kendaraan.
             $table->foreignId('tenant_id')
                 ->constrained('tenants', 'user_id')->restrictOnDelete()->cascadeOnUpdate();
             $table->enum('type', array_column(VehicleType::cases(), 'value'));
+            // unique: satu plat hanya tercatat sekali. NULL (sepeda) boleh berulang.
             $table->string('plate_number', 15)->nullable()->unique();
             $table->string('brand_model', 100);
             $table->decimal('battery_capacity_kwh', 6, 2)->nullable();
             $table->timestamps();
         });
 
-        // Selain sepeda wajib berplat; kapasitas baterai diisi jika dan hanya jika mobil listrik.
+        // CHECK: selain sepeda wajib berplat; kapasitas baterai diisi jika dan hanya jika mobil listrik.
         DB::statement("ALTER TABLE vehicles ADD CONSTRAINT vehicles_plate_check
             CHECK (type = 'bicycle' OR plate_number IS NOT NULL)");
         DB::statement("ALTER TABLE vehicles ADD CONSTRAINT vehicles_battery_check
