@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Data awal: satu akun admin (tanpa baris tenants).
+     * Data awal: satu akun admin (tanpa baris tenants) + data demo presentasi.
      */
     public function run(): void
     {
@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@garasi.test',
             'password' => 'password',
         ]);
+
+        $this->call(DemoSeeder::class);
     }
 }
