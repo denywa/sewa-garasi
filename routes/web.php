@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\GarageController;
 use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -30,6 +31,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/verifikasi', [VerificationController::class, 'index'])->name('verifications.index');
         Route::patch('/verifikasi/{tenant}/approve', [VerificationController::class, 'approve'])->name('verifications.approve');
         Route::patch('/verifikasi/{tenant}/reject', [VerificationController::class, 'reject'])->name('verifications.reject');
+
+        // UC-05.
+        Route::get('/garasi/create', [GarageController::class, 'create'])->name('garages.create');
+        Route::post('/garasi', [GarageController::class, 'store'])->name('garages.store');
     });
 
     Route::middleware('role:tenant')->prefix('penyewa')->name('tenant.')->group(function () {
