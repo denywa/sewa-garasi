@@ -1,15 +1,17 @@
 @extends('layouts.app')
 
 @section('title', 'Buat Garasi')
+@section('width', 'max-w-xl')
 
 @section('content')
-    <form method="POST" action="{{ route('admin.garages.store') }}" class="max-w-md space-y-4 rounded-md bg-white p-6 shadow">
+    <p class="mb-6 text-gray-600">Kode garasi dibuat otomatis, melanjutkan nomor terakhir tiap tipe.</p>
+
+    <form method="POST" action="{{ route('admin.garages.store') }}" class="card space-y-5">
         @csrf
 
         <div>
-            <label for="type" class="block text-sm font-medium text-gray-700">Tipe garasi</label>
-            <select id="type" name="type" required
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <label for="type" class="form-label">Tipe garasi</label>
+            <select id="type" name="type" required @class(['form-control', 'border-red-500' => $errors->has('type')])>
                 @foreach ($types as $type)
                     <option value="{{ $type->value }}" @selected(old('type') === $type->value)>
                         {{ $type->label() }} ({{ $type->prefix() }}###)
@@ -17,20 +19,19 @@
                 @endforeach
             </select>
             @error('type')
-                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                <p class="form-error">{{ $message }}</p>
             @enderror
         </div>
 
-        <div>
-            <x-input name="count" label="Jumlah garasi" type="number" min="1" max="999" required />
-            <p id="count-hint" class="mt-1 text-sm text-gray-500"></p>
-        </div>
+        {{-- Keterangan diisi script di bawah: kode berikutnya & sisa kuota tipe terpilih. --}}
+        <x-input name="count" label="Jumlah garasi" type="number" min="1" max="999" required hint="Maksimal 999 per tipe." />
         <x-input name="daily_price" label="Harga sewa harian (Rp)" type="number" min="1" required />
         <div id="kwh-field">
-            <x-input name="price_per_kwh" label="Harga isi listrik per kWh (Rp)" type="number" min="1" />
+            <x-input name="price_per_kwh" label="Harga isi listrik per kWh (Rp)" type="number" min="1"
+                hint="Wajib untuk garasi Mobil Listrik (biaya isi daya penuh)." />
         </div>
 
-        <button type="submit" class="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Buat Garasi</button>
+        <button type="submit" class="btn-primary">Buat Garasi</button>
     </form>
 
     <script>

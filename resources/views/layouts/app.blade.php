@@ -7,33 +7,41 @@
     <title>@yield('title') — {{ config('app.name') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-gray-100 text-gray-900">
-    <nav class="bg-white border-b">
-        <div class="max-w-5xl mx-auto px-4 h-14 flex items-center gap-6 text-sm">
-            <a href="{{ route('home') }}" class="font-semibold text-base">Sewa Garasi</a>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+    @php
+        // Menu navigasi per role: [nama route => teks]. Menu halaman yang sedang dibuka ditebalkan.
+        $menu = auth()->user()->isAdmin()
+            ? ['admin.dashboard' => 'Beranda', 'admin.verifications.index' => 'Verifikasi Pendaftar', 'admin.garages.create' => 'Buat Garasi']
+            : ['tenant.dashboard' => 'Beranda'];
+    @endphp
 
-            @if (auth()->user()->isAdmin())
-                <a href="{{ route('admin.dashboard') }}" class="hover:text-indigo-600">Beranda</a>
-                <a href="{{ route('admin.verifications.index') }}" class="hover:text-indigo-600">Verifikasi Pendaftar</a>
-                <a href="{{ route('admin.garages.create') }}" class="hover:text-indigo-600">Buat Garasi</a>
-            @else
-                <a href="{{ route('tenant.dashboard') }}" class="hover:text-indigo-600">Beranda</a>
-            @endif
+    <nav class="border-b bg-white">
+        <div class="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4">
+            <a href="{{ route('home') }}" class="text-lg font-bold text-indigo-600">Sewa Garasi</a>
 
-            <span class="ml-auto text-gray-600">{{ auth()->user()->name }}</span>
+            @foreach ($menu as $route => $text)
+                <a href="{{ route($route) }}" @class([
+                    'border-b-2 py-5 text-sm font-medium',
+                    'border-indigo-600 text-indigo-600' => request()->routeIs($route),
+                    'border-transparent text-gray-600 hover:text-gray-900' => ! request()->routeIs($route),
+                ])>{{ $text }}</a>
+            @endforeach
+
+            <span class="ml-auto text-sm text-gray-600">{{ auth()->user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="text-red-600 hover:underline">Logout</button>
+                <button type="submit" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">Logout</button>
             </form>
         </div>
     </nav>
 
-    <main class="max-w-5xl mx-auto px-4 py-6">
+    {{-- Halaman form memakai @section('width', 'max-w-xl') agar judul & kartu sempit dan di tengah. --}}
+    <main class="mx-auto @yield('width', 'max-w-5xl') px-4 py-8">
         @if (session('status'))
-            <div class="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{{ session('status') }}</div>
+            <div class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-800">{{ session('status') }}</div>
         @endif
 
-        <h1 class="text-xl font-semibold mb-4">@yield('title')</h1>
+        <h1 class="mb-2 text-2xl font-bold">@yield('title')</h1>
         @yield('content')
     </main>
 </body>

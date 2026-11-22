@@ -1,3 +1,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Kelas gaya yang dipakai berulang di banyak halaman, supaya tampilan seragam
+   dan cukup diubah di satu tempat. */
+@layer components {
+    .card {
+        @apply rounded-xl border border-gray-200 bg-white p-6 shadow-sm;
+    }
+
+    .form-label {
+        @apply mb-1.5 block text-sm font-semibold text-gray-800;
+    }
+
+    .form-control {
+        @apply block w-full rounded-lg border-gray-300 px-3.5 py-2.5 text-base shadow-sm
+            focus:border-indigo-500 focus:ring-indigo-500;
+    }
+
+    .form-hint {
+        @apply mt-1.5 text-sm text-gray-500;
+    }
+
+    .form-error {
+        @apply mt-1.5 text-sm font-medium text-red-600;
+    }
+
+    .btn-primary {
+        @apply inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-3
+            text-base font-semibold text-white hover:bg-indigo-700
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+    }
+}

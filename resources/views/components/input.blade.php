@@ -1,12 +1,16 @@
-{{-- Satu kolom form: label, input, dan pesan error di bawahnya. Contoh: <x-input name="email" label="Email" type="email" /> --}}
-@props(['name', 'label', 'type' => 'text'])
+{{-- Satu kolom form: label, input, keterangan (opsional), dan pesan error.
+     Contoh: <x-input name="email" label="Email" type="email" hint="Dipakai untuk login." /> --}}
+@props(['name', 'label', 'type' => 'text', 'hint' => null])
 
 <div>
-    <label for="{{ $name }}" class="block text-sm font-medium text-gray-700">{{ $label }}</label>
+    <label for="{{ $name }}" class="form-label">{{ $label }}</label>
     <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}"
         @if ($type !== 'password') value="{{ old($name) }}" @endif
-        {{ $attributes->merge(['class' => 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500']) }}>
+        {{ $attributes->class(['form-control', 'border-red-500' => $errors->has($name)]) }}>
+    @if ($hint)
+        <p id="{{ $name }}-hint" class="form-hint">{{ $hint }}</p>
+    @endif
     @error($name)
-        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        <p class="form-error">{{ $message }}</p>
     @enderror
 </div>

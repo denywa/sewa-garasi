@@ -3,5 +3,6 @@
 @section('title', 'Beranda Penyewa')
 
 @section('content')
-    <p>Selamat datang, {{ auth()->user()->name }}. Pilih menu di atas untuk menyewa garasi.</p>
+    {{-- Kartu menu (Sewa Garasi, dst.) ditambahkan bersama fiturnya di task berikutnya. --}}
+    <p class="text-gray-600">Selamat datang, {{ auth()->user()->name }}.</p>
 @endsection
