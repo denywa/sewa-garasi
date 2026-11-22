@@ -7,6 +7,7 @@ use App\Enums\PaymentType;
 use App\Enums\RentalType;
 use App\Enums\VehicleType;
 use App\Models\Garage;
+use App\Models\Payment;
 use App\Models\Rental;
 use App\Models\Tenant;
 use App\Models\Vehicle;
@@ -17,7 +18,8 @@ use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 /**
- * Alur sewa yang memakai database: hitung total biaya dan simpan sewa baru (UC-04, UC-08).
+ * Alur sewa yang memakai database: hitung biaya, simpan sewa baru (UC-04), dan perpanjang sewa (UC-07),
+ * masing-masing dengan bukti bayar (UC-08).
  * Perhitungan angka didelegasikan ke RentalCalculator (murni, tanpa database).
  */
 final class RentalService
@@ -122,6 +124,42 @@ final class RentalService
             ]);
 
             return $rental;
+        });
+    }
+
+    /**
+     * Perpanjang sewa yang aktif hari ini: ubah tanggal selesai dan catat pembayaran perpanjangan + bukti bayar.
+     * Sisa biaya = selisih hari × harga harian garasi (juga untuk sewa bulanan).
+     *
+     * @throws ValidationException
+     */
+    public function extend(Rental $rental, CarbonInterface $newEnd, UploadedFile $proof): Payment
+    {
+        return DB::transaction(function () use ($rental, $newEnd, $proof) {
+            // Kunci baris sewa: dua perpanjangan bersamaan tidak boleh membaca tanggal selesai yang sama.
+            $rental = Rental::query()->with('garage')->lockForUpdate()->findOrFail($rental->id);
+
+            if (! Rental::query()->activeOn(today())->whereKey($rental->id)->exists()) {
+                throw ValidationException::withMessages(['rental' => 'Sewa ini sudah tidak aktif.']);
+            }
+
+            try {
+                $amount = $this->calculator->extensionCost($rental->end_date, $newEnd, $rental->garage->daily_price);
+            } catch (InvalidArgumentException) {
+                throw ValidationException::withMessages([
+                    'new_end_date' => 'Tanggal selesai baru harus setelah '.$rental->end_date->format('d-m-Y').'.',
+                ]);
+            }
+
+            // rentals.end_date = tanggal selesai pembayaran terakhir; diubah dalam transaksi yang sama.
+            $rental->update(['end_date' => $newEnd]);
+
+            return $rental->payments()->create([
+                'type' => PaymentType::Extension,
+                'amount' => $amount,
+                'proof_path' => $proof->store('payment-proofs', 'public'),
+                'end_date' => $newEnd,
+            ]);
         });
     }
 

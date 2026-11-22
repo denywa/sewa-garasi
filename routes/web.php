@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ExtensionController;
 use App\Http\Controllers\Admin\GarageController;
 use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Auth\LoginController;
@@ -36,6 +37,11 @@ Route::middleware('auth')->group(function () {
         // UC-05.
         Route::get('/garasi/create', [GarageController::class, 'create'])->name('garages.create');
         Route::post('/garasi', [GarageController::class, 'store'])->name('garages.store');
+
+        // UC-07 + UC-08.
+        Route::get('/perpanjang', [ExtensionController::class, 'index'])->name('extensions.index');
+        Route::get('/perpanjang/{rental}', [ExtensionController::class, 'edit'])->name('extensions.edit');
+        Route::put('/perpanjang/{rental}', [ExtensionController::class, 'update'])->name('extensions.update');
     });
 
     Route::middleware('role:tenant')->prefix('penyewa')->name('tenant.')->group(function () {

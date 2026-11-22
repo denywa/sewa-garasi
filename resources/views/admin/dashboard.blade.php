@@ -12,5 +12,8 @@
         <x-menu-card :href="route('admin.garages.create')" title="Buat Garasi">
             Tambah garasi Sepeda, Mobil, atau Mobil Listrik sekaligus.
         </x-menu-card>
+        <x-menu-card :href="route('admin.extensions.index')" title="Perpanjang Sewa">
+            Ubah tanggal selesai sewa yang aktif, hitung sisa biaya, dan unggah bukti bayar.
+        </x-menu-card>
     </div>
 @endsection

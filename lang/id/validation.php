@@ -5,10 +5,12 @@
  * aturan lain jatuh ke bahasa Inggris (APP_FALLBACK_LOCALE=en).
  */
 return [
+    'after' => ':Attribute harus setelah :date.',
     'between' => [
         'numeric' => ':Attribute harus antara :min dan :max.',
     ],
     'confirmed' => ':Attribute tidak sama dengan konfirmasinya.',
+    'date_format' => ':Attribute harus berformat :format.',
     'digits' => ':Attribute harus :digits digit angka.',
     'email' => ':Attribute harus berupa alamat email yang valid.',
     'enum' => ':Attribute yang dipilih tidak valid.',
@@ -82,5 +84,6 @@ return [
         'garage_type' => 'tipe garasi',
         'garage_id' => 'garasi',
         'proof' => 'bukti pembayaran',
+        'new_end_date' => 'tanggal selesai baru',
     ],
 ];
