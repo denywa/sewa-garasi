@@ -55,6 +55,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/sewa/baru', [RentalController::class, 'create'])->name('rentals.create');
         Route::get('/sewa/baru/garasi', [RentalController::class, 'choose'])->name('rentals.choose');
         Route::post('/sewa', [RentalController::class, 'store'])->name('rentals.store');
-        Route::get('/sewa/{rental}/berhasil', [RentalController::class, 'success'])->name('rentals.success');
+
+        // UC-10 (pelengkap). Didaftarkan setelah /sewa/baru agar "baru" tidak dianggap {rental}.
+        Route::get('/sewa', [RentalController::class, 'index'])->name('rentals.index');
+        Route::get('/sewa/{rental}', [RentalController::class, 'show'])->name('rentals.show');
     });
 });

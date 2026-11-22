@@ -17,7 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * UC-04 Sewa Baru: isi data kendaraan → pilih garasi tersedia & upload bukti bayar → ringkasan sewa.
+ * UC-04 Sewa Baru (isi data kendaraan → pilih garasi tersedia & upload bukti bayar) dan
+ * UC-10 Sewa Saya (daftar & detail sewa milik penyewa).
  */
 class RentalController extends Controller
 {
@@ -76,17 +77,34 @@ class RentalController extends Controller
             $request->file('proof'),
         );
 
-        return redirect()->route('tenant.rentals.success', $rental);
+        return redirect()->route('tenant.rentals.show', $rental)->with('status', 'Sewa berhasil disimpan.');
     }
 
     /**
-     * Langkah 3: ringkasan sewa yang baru disimpan. Sewa milik penyewa lain → 404.
+     * UC-10 Sewa Saya: semua sewa milik penyewa (lewat kendaraannya), terbaru di atas, dengan total dibayar.
      */
-    public function success(Request $request, Rental $rental): View
+    public function index(Request $request): View
+    {
+        $rentals = Rental::query()
+            ->whereRelation('vehicle', 'tenant_id', $request->user()->id)
+            ->with('garage', 'vehicle')
+            ->withSum('payments', 'amount') // kolom payments_sum_amount = sewa awal + perpanjangan
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('tenant.rentals.index', ['rentals' => $rentals]);
+    }
+
+    /**
+     * UC-10 detail satu sewa + riwayat pembayaran. Juga tujuan setelah sewa baru disimpan.
+     * Sewa milik penyewa lain → 404 (tidak membocorkan bahwa sewa itu ada).
+     */
+    public function show(Request $request, Rental $rental): View
     {
         $rental->load('vehicle', 'garage', 'payments');
         abort_unless($rental->vehicle->tenant_id === $request->user()->id, 404);
 
-        return view('tenant.rentals.success', ['rental' => $rental]);
+        return view('tenant.rentals.show', ['rental' => $rental]);
     }
 }

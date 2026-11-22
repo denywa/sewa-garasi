@@ -9,5 +9,8 @@
         <x-menu-card :href="route('tenant.rentals.create')" title="Sewa Baru">
             Sewa garasi untuk sepeda, motor, mobil, atau mobil listrik mulai hari ini.
         </x-menu-card>
+        <x-menu-card :href="route('tenant.rentals.index')" title="Sewa Saya">
+            Lihat garasi yang sedang dan pernah Anda sewa beserta riwayat pembayarannya.
+        </x-menu-card>
     </div>
 @endsection

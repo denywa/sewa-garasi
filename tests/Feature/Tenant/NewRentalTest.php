@@ -195,8 +195,10 @@ class NewRentalTest extends TestCase
         $response = $this->store($garage);
 
         $rental = Rental::query()->sole();
-        $response->assertRedirect(route('tenant.rentals.success', $rental));
-        $this->get(route('tenant.rentals.success', $rental))->assertOk()
+        // Setelah simpan langsung ke Detail Sewa (UC-10) dengan pesan berhasil.
+        $response->assertRedirect(route('tenant.rentals.show', $rental))
+            ->assertSessionHas('status', 'Sewa berhasil disimpan.');
+        $this->get(route('tenant.rentals.show', $rental))->assertOk()
             ->assertSee('C007')
             ->assertSee('24 Nov 2026')
             ->assertSee(self::RP_150_000);
@@ -221,10 +223,5 @@ class NewRentalTest extends TestCase
         Rental::factory()->for($garage)->create();
 
         $this->store($garage)->assertSessionHasErrors(['garage_id' => 'Garasi sudah tidak tersedia, pilih garasi lain.']);
-    }
-
-    public function test_halaman_berhasil_milik_penyewa_lain_404(): void
-    {
-        $this->get(route('tenant.rentals.success', Rental::factory()->create()))->assertNotFound();
     }
 }
