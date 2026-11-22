@@ -14,6 +14,7 @@
 
             @if (auth()->user()->isAdmin())
                 <a href="{{ route('admin.dashboard') }}" class="hover:text-indigo-600">Beranda</a>
+                <a href="{{ route('admin.verifications.index') }}" class="hover:text-indigo-600">Verifikasi Pendaftar</a>
             @else
                 <a href="{{ route('tenant.dashboard') }}" class="hover:text-indigo-600">Beranda</a>
             @endif

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Http\Request;
@@ -24,6 +25,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::view('/', 'admin.dashboard')->name('dashboard');
+
+        // UC-06. {tenant} = tenants.user_id (primary key Tenant).
+        Route::get('/verifikasi', [VerificationController::class, 'index'])->name('verifications.index');
+        Route::patch('/verifikasi/{tenant}/approve', [VerificationController::class, 'approve'])->name('verifications.approve');
+        Route::patch('/verifikasi/{tenant}/reject', [VerificationController::class, 'reject'])->name('verifications.reject');
     });
 
     Route::middleware('role:tenant')->prefix('penyewa')->name('tenant.')->group(function () {
