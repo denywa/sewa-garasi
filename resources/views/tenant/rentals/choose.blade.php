@@ -6,7 +6,7 @@
 @section('content')
     <div class="mb-6 flex items-start justify-between gap-4">
         <p class="text-gray-600">Pilih garasi, lalu unggah bukti pembayaran sesuai total biaya.</p>
-        <span class="shrink-0 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700" title="Langkah 2 dari 2">2/2</span>
+        <x-step :current="2" :total="2" />
     </div>
 
     {{-- Error dari langkah 1 / service (mis. plat milik penyewa lain) tidak punya kolom di halaman ini. --}}

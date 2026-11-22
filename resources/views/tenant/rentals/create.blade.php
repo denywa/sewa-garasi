@@ -15,7 +15,7 @@
     <div class="mb-6 flex items-start justify-between gap-4">
         <p class="text-gray-600">Isi data kendaraan dan lama sewa. Mulai hari ini,
             <span class="font-semibold text-gray-900">{{ today()->translatedFormat('d M Y') }}</span>.</p>
-        <span class="shrink-0 rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700" title="Langkah 1 dari 2">1/2</span>
+        <x-step :current="1" :total="2" />
     </div>
 
     {{-- GET: langkah 2 hanya menampilkan garasi, belum menyimpan apa pun. --}}
