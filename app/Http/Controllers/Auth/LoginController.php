@@ -46,7 +46,9 @@ class LoginController extends Controller
         // Ganti ID session setelah login (mencegah session fixation).
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        // Selalu ke beranda sesuai role. Bukan intended(): URL sebelum login bisa milik role lain
+        // (mis. halaman penyewa di browser yang sama) sehingga admin akan mendapat 403.
+        return redirect()->route('home');
     }
 
     /**

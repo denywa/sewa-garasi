@@ -55,6 +55,14 @@ class LoginTest extends TestCase
         $this->get(route('home'))->assertRedirect(route('admin.dashboard'));
     }
 
+    public function test_admin_tidak_diarahkan_ke_halaman_penyewa_yang_tersimpan(): void
+    {
+        // URL yang dibuka sebelum login (mis. sisa sesi penyewa di browser yang sama).
+        $this->get(route('tenant.rentals.create'))->assertRedirect(route('login'));
+
+        $this->login(User::factory()->admin()->create())->assertRedirect(route('home'));
+    }
+
     public function test_password_salah(): void
     {
         $admin = User::factory()->admin()->create();
