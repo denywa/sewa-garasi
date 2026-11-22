@@ -25,21 +25,33 @@ final class RentalService
     public function __construct(private readonly RentalCalculator $calculator) {}
 
     /**
-     * Total biaya sewa awal: biaya sewa + biaya isi listrik (hanya di garasi Mobil Listrik).
+     * Rincian biaya sewa awal: biaya sewa garasi dan biaya isi listrik (0 bila bukan garasi Mobil Listrik).
+     *
+     * @return array{rent: int, charging: int}
+     *
+     * @throws InvalidArgumentException bila jumlah hari atau sisa baterai tidak valid
+     */
+    public function costBreakdown(Garage $garage, RentalType $type, CarbonInterface $start, ?int $days, ?float $capacityKwh, ?float $remainingKwh): array
+    {
+        $rentalDays = $this->calculator->rentalDays($type, $start, $days);
+
+        return [
+            'rent' => $this->calculator->rentCost($garage->daily_price, $type, $rentalDays),
+            // Garasi Mobil Listrik hanya untuk mobil listrik; kapasitas & sisa sudah wajib diisi (request / create).
+            'charging' => $garage->type === GarageType::ElectricCar
+                ? $this->calculator->chargingCost((float) $capacityKwh, (float) $remainingKwh, $garage->price_per_kwh)
+                : 0,
+        ];
+    }
+
+    /**
+     * Total biaya sewa awal = biaya sewa + biaya isi listrik.
      *
      * @throws InvalidArgumentException bila jumlah hari atau sisa baterai tidak valid
      */
     public function quote(Garage $garage, RentalType $type, CarbonInterface $start, ?int $days, ?float $capacityKwh, ?float $remainingKwh): int
     {
-        $rentalDays = $this->calculator->rentalDays($type, $start, $days);
-        $total = $this->calculator->rentCost($garage->daily_price, $type, $rentalDays);
-
-        if ($garage->type === GarageType::ElectricCar) {
-            // Garasi Mobil Listrik hanya untuk mobil listrik, jadi kapasitas & sisa selalu terisi.
-            $total += $this->calculator->chargingCost((float) $capacityKwh, (float) $remainingKwh, $garage->price_per_kwh);
-        }
-
-        return $total;
+        return array_sum($this->costBreakdown($garage, $type, $start, $days, $capacityKwh, $remainingKwh));
     }
 
     /**
@@ -69,6 +81,11 @@ final class RentalService
             if ($garage->rentals()->activeOn($start)->exists()) {
                 throw ValidationException::withMessages(['garage_id' => 'Garasi sudah tidak tersedia, pilih garasi lain.']);
             }
+            // Sisa baterai hanya dibutuhkan untuk biaya isi penuh di garasi Mobil Listrik.
+            $electricGarage = $garage->type === GarageType::ElectricCar;
+            if ($electricGarage && $data['battery_remaining_kwh'] === null) {
+                throw ValidationException::withMessages(['battery_remaining_kwh' => 'Sisa baterai wajib diisi untuk garasi Mobil Listrik.']);
+            }
 
             // 2. Kendaraan baru atau milik sendiri yang dipakai ulang.
             $vehicle = $this->findOrCreateVehicle($tenant, $data, $vehicleType, $start);
@@ -94,7 +111,7 @@ final class RentalService
                 'rental_type' => $data['rental_type'],
                 'start_date' => $start,
                 'end_date' => $end,
-                'battery_remaining_kwh' => $vehicleType->isElectric() ? $data['battery_remaining_kwh'] : null,
+                'battery_remaining_kwh' => $electricGarage ? $data['battery_remaining_kwh'] : null,
             ]);
 
             $rental->payments()->create([

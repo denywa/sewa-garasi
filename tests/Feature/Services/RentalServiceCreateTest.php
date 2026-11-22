@@ -93,6 +93,16 @@ class RentalServiceCreateTest extends TestCase
         $this->assertSame(180_000, $this->service->quote($garage, RentalType::Daily, today(), 2, 60, 20));
     }
 
+    public function test_rincian_biaya_sewa_dan_listrik(): void
+    {
+        $garage = Garage::factory()->create(['type' => GarageType::ElectricCar, 'daily_price' => 50_000, 'price_per_kwh' => 2_000]);
+
+        $this->assertSame(
+            ['rent' => 100_000, 'charging' => 80_000],
+            $this->service->costBreakdown($garage, RentalType::Daily, today(), 2, 60, 20),
+        );
+    }
+
     public function test_quote_mobil_listrik_di_garasi_mobil_tanpa_biaya_listrik(): void
     {
         $garage = Garage::factory()->create(['daily_price' => 50_000]);
@@ -137,6 +147,27 @@ class RentalServiceCreateTest extends TestCase
         $this->assertSame(60.0, $rental->vehicle->battery_capacity_kwh);
         $this->assertSame(20.0, $rental->battery_remaining_kwh);
         $this->assertSame(180_000, $rental->payments()->sole()->amount);
+    }
+
+    public function test_sisa_baterai_wajib_di_garasi_mobil_listrik(): void
+    {
+        $garage = Garage::factory()->create(['type' => GarageType::ElectricCar, 'price_per_kwh' => 2_000]);
+
+        $this->assertRejected('battery_remaining_kwh', 'Sisa baterai wajib diisi untuk garasi Mobil Listrik.',
+            fn () => $this->rent(Tenant::factory()->create(), $garage, [
+                'vehicle_type' => VehicleType::ElectricCar, 'battery_capacity_kwh' => 60, 'battery_remaining_kwh' => null,
+            ]));
+
+        $this->assertDatabaseCount('rentals', 0);
+    }
+
+    public function test_sisa_baterai_tidak_disimpan_di_garasi_mobil(): void
+    {
+        $rental = $this->rent(Tenant::factory()->create(), Garage::factory()->create(), [
+            'vehicle_type' => VehicleType::ElectricCar, 'battery_capacity_kwh' => 60, 'battery_remaining_kwh' => 20,
+        ]);
+
+        $this->assertNull($rental->battery_remaining_kwh);
     }
 
     public function test_garasi_yang_sudah_disewa_ditolak(): void

@@ -12,7 +12,7 @@
         // Menu navigasi per role: [nama route => teks]. Menu halaman yang sedang dibuka ditebalkan.
         $menu = auth()->user()->isAdmin()
             ? ['admin.dashboard' => 'Beranda', 'admin.verifications.index' => 'Verifikasi Pendaftar', 'admin.garages.create' => 'Buat Garasi']
-            : ['tenant.dashboard' => 'Beranda'];
+            : ['tenant.dashboard' => 'Beranda', 'tenant.rentals.create' => 'Sewa Baru'];
     @endphp
 
     <nav class="border-b bg-white">

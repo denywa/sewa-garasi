@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\GarageController;
 use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Tenant\RentalController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,5 +40,11 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:tenant')->prefix('penyewa')->name('tenant.')->group(function () {
         Route::view('/', 'tenant.dashboard')->name('dashboard');
+
+        // UC-04 + UC-08.
+        Route::get('/sewa/baru', [RentalController::class, 'create'])->name('rentals.create');
+        Route::get('/sewa/baru/garasi', [RentalController::class, 'choose'])->name('rentals.choose');
+        Route::post('/sewa', [RentalController::class, 'store'])->name('rentals.store');
+        Route::get('/sewa/{rental}/berhasil', [RentalController::class, 'success'])->name('rentals.success');
     });
 });
