@@ -16,22 +16,28 @@
     @endphp
 
     <nav class="border-b bg-white">
-        <div class="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4">
-            <a href="{{ route('home') }}" class="text-lg font-bold text-indigo-600">Sewa Garasi</a>
+        {{-- 3 kolom: logo kiri, menu tengah, nama & logout kanan. Kolom kiri & kanan sama lebar (1fr)
+             sehingga menu selalu tepat di tengah. --}}
+        <div class="grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-6 px-6">
+            <a href="{{ route('home') }}" class="justify-self-start text-lg font-bold text-indigo-600">Sewa Garasi</a>
 
-            @foreach ($menu as $route => $text)
-                <a href="{{ route($route) }}" @class([
-                    'border-b-2 py-5 text-sm font-medium',
-                    'border-indigo-600 text-indigo-600' => request()->routeIs($route),
-                    'border-transparent text-gray-600 hover:text-gray-900' => ! request()->routeIs($route),
-                ])>{{ $text }}</a>
-            @endforeach
+            <div class="flex gap-6">
+                @foreach ($menu as $route => $text)
+                    <a href="{{ route($route) }}" @class([
+                        'border-b-2 py-5 text-sm font-medium',
+                        'border-indigo-600 text-indigo-600' => request()->routeIs($route),
+                        'border-transparent text-gray-600 hover:text-gray-900' => ! request()->routeIs($route),
+                    ])>{{ $text }}</a>
+                @endforeach
+            </div>
 
-            <span class="ml-auto text-sm text-gray-600">{{ auth()->user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">Logout</button>
-            </form>
+            <div class="flex items-center justify-self-end gap-4">
+                <span class="text-sm text-gray-600">{{ auth()->user()->name }}</span>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100">Logout</button>
+                </form>
+            </div>
         </div>
     </nav>
 
