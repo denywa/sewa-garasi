@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ExtensionController;
 use App\Http\Controllers\Admin\GarageController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\VerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -42,6 +43,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/perpanjang', [ExtensionController::class, 'index'])->name('extensions.index');
         Route::get('/perpanjang/{rental}', [ExtensionController::class, 'edit'])->name('extensions.edit');
         Route::put('/perpanjang/{rental}', [ExtensionController::class, 'update'])->name('extensions.update');
+
+        // UC-09.
+        Route::get('/laporan', [ReportController::class, 'index'])->name('reports.index');
     });
 
     Route::middleware('role:tenant')->prefix('penyewa')->name('tenant.')->group(function () {

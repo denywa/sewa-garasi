@@ -15,5 +15,8 @@
         <x-menu-card :href="route('admin.extensions.index')" title="Perpanjang Sewa">
             Ubah tanggal selesai sewa yang aktif, hitung sisa biaya, dan unggah bukti bayar.
         </x-menu-card>
+        <x-menu-card :href="route('admin.reports.index')" title="Laporan">
+            Jumlah transaksi & pendapatan per bulan, per hari, per tipe garasi, dan per penyewa.
+        </x-menu-card>
     </div>
 @endsection
