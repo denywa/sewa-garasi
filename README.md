@@ -1,58 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sewa Garasi
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web persewaan garasi untuk sepeda, sepeda motor, mobil, dan mobil listrik. Dibuat untuk uji kompetensi
+LSP skema **Pemrogram** (IMT.01.15/SSK/LSP/IX/2021).
 
-## About Laravel
+- Tipe garasi: **Sepeda** (`S001`), **Mobil** (`C001`), **Mobil Listrik** (`E001`); maksimal 999 per tipe.
+- Sepeda & sepeda motor → garasi Sepeda; mobil → garasi Mobil; mobil listrik → garasi Mobil **atau** Mobil Listrik
+  (di garasi Mobil Listrik baterai diisi penuh: biaya = (kapasitas − sisa) × harga per kWh).
+- Sewa **harian** 1 … N−1 hari atau **bulanan** N hari (biaya 25 × harga harian), N = jumlah hari di bulan tanggal
+  mulai. Tanggal mulai selalu hari ini.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Role | Fitur |
+|---|---|
+| Penyewa | Daftar akun (menunggu verifikasi), login/logout, **Sewa Baru** (data kendaraan → pilih garasi tersedia hari ini beserta rincian biaya → unggah bukti bayar), **Sewa Saya** (daftar sewa & riwayat pembayaran) |
+| Admin | **Verifikasi Pendaftar** (terima/tolak), **Buat Garasi** sekaligus (kode otomatis melanjutkan nomor terakhir), **Perpanjang Sewa** (tanggal selesai baru → sisa biaya → unggah bukti bayar), **Laporan** per bulan, per hari, per tipe garasi, per penyewa |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Teknologi & library pre-existing
 
-## Learning Laravel
+| Library / komponen | Dipakai untuk |
+|---|---|
+| Laravel 13 (PHP 8.3+) | Framework MVC: routing, controller, middleware, Form Request (validasi), session & autentikasi |
+| Eloquent ORM | Model, relasi, scope, transaksi `DB::transaction` + `lockForUpdate` (mencegah sewa ganda) |
+| MySQL 8 | Basis data relasional (6 tabel, 3NF) dengan foreign key & CHECK constraint |
+| Blade | Template tampilan & komponen (`x-input`, `x-select`, `x-rupiah`, `x-step`, `x-menu-card`) |
+| Tailwind CSS 3 + `@tailwindcss/forms`, Vite | Gaya tampilan & build aset |
+| Carbon | Perhitungan tanggal (jumlah hari di bulan, tanggal selesai, selisih hari) |
+| `Illuminate\Support\Number` (intl) | Format Rupiah |
+| PHPUnit 12 | Unit test & feature test |
+| Laravel Pint | Merapikan gaya kode (PSR-12 / preset Laravel) |
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Struktur kode
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+app/Enums/             Aturan per tipe (GarageType, VehicleType, RentalType, PaymentType, TenantStatus, UserRole, ReportType)
+app/Services/          RentalCalculator & GarageCodeGenerator (logika murni, tanpa DB)
+                       RentalService (simpan sewa & perpanjangan dalam transaksi)
+app/Http/Controllers/  Auth/, Admin/, Tenant/ — controller tipis
+app/Http/Requests/     Validasi input (Form Request)
+app/Http/Middleware/   EnsureRole (role:admin / role:tenant)
+database/migrations/   Skema + CHECK constraint
+lang/id/validation.php Pesan validasi Bahasa Indonesia
+tests/Unit, tests/Feature
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+## Instalasi
 
-## Contributing
+Kebutuhan: PHP 8.3+ (ekstensi `pdo_mysql`, `intl`, `gd`), Composer, Node.js, MySQL 8.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+git clone https://github.com/denywa/sewa-garasi.git
+cd sewa-garasi
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+```
 
-## Code of Conduct
+Buat dua database MySQL: `sewa_garasi` (aplikasi) dan `sewa_garasi_test` (khusus test), lalu sesuaikan
+`DB_USERNAME` / `DB_PASSWORD` di `.env` bila perlu.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan migrate --seed     # skema + akun admin + data demo
+php artisan storage:link       # agar bukti bayar bisa dibuka di browser
+composer run dev               # server, queue, dan Vite → http://127.0.0.1:8000
+```
 
-## Security Vulnerabilities
+Mengulang data dari awal: `php artisan migrate:fresh --seed` (**menghapus semua data**).
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Akun demo
 
-## License
+Semua password: `password`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Email | Role | Keterangan |
+|---|---|---|
+| `admin@garasi.test` | Admin | |
+| `budi@garasi.test` | Penyewa (disetujui) | 1 sewa aktif yang sudah diperpanjang, 2 sewa selesai |
+| `siti@garasi.test` | Penyewa (disetujui) | Sewa aktif sepeda motor & mobil listrik (dengan biaya isi daya) |
+| `rina@garasi.test` | Penyewa (menunggu) | Muncul di Verifikasi Pendaftar; belum bisa login |
+| `joko@garasi.test` | Penyewa (ditolak) | Tidak bisa login |
+
+Data demo dibuat relatif dari tanggal hari ini, sehingga selalu ada sewa aktif dan transaksi di beberapa bulan
+untuk laporan. Tips: buka admin di `http://127.0.0.1:8000` dan penyewa di `http://localhost:8000` agar keduanya bisa
+login bersamaan (cookie terpisah).
+
+## Menjalankan test
+
+Test memakai database MySQL `sewa_garasi_test` (lihat `phpunit.xml`), bukan SQLite, karena laporan memakai fungsi
+tanggal MySQL dan skema memakai CHECK constraint.
+
+```bash
+php artisan test                       # semua test
+php artisan test --testsuite=Unit      # unit test logika murni (RentalCalculator, GarageCodeGenerator, enum)
+php artisan test --filter=ReportTest   # satu kelas test
+vendor/bin/pint --test                 # cek gaya kode
+```
